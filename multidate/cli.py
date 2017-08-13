@@ -10,20 +10,43 @@ def usage():
     return '''
     Usage:
 
-    $ multidate <comma separated list of unix timestamps
+    $ multidate <unix hour>, <unixhour>
+    $ multidate <unix hour>,<unixhour>
+    $ multidate <unix hour> <unixhour>
     '''
 
 
-def main():
-    try:
-        hours = sys.argv[1]
-    except Exception:
-        print usage()
-        return
+def handle_exit():
+    print usage()
+    sys.exit()
 
-    hour_strs = hours.split(',')
-    parsed_hours = [int(hour_str) for hour_str in hour_strs]
-    for hour in parsed_hours:
+
+def sanatize_hour(hour):
+    assert isinstance(hour, str)
+
+    hours = hour.split(',')
+    sanatized_hours = []
+
+    for hour in hours:
+        try:
+            sanatized_hours.append(int(hour))
+        except ValueError:
+            handle_exit()
+    return sanatized_hours
+
+
+def parse_hours_from_cli(inputs):
+    parsed_hours = []
+    for hour in inputs:
+        sanatized_hours = sanatize_hour(hour)
+        parsed_hours.extend(sanatized_hours)
+    return parsed_hours
+
+
+def main():
+    inputs = sys.argv[1:]
+    hours_from_cli = parse_hours_from_cli(inputs)
+    for hour in hours_from_cli:
         print datetime.datetime.utcfromtimestamp(hour)
 
 
